@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'knife-table'
-  s.version = '0.0.1'
+  s.version = '0.0.2'
   s.summary = 'Help chef set and serve the table'
   s.author = 'Chris Roberts'
   s.email = 'chrisroberts.code@gmail.com'
