@@ -224,6 +224,7 @@ module KnifeTable
     def upload_roles(role)
       role_load = loader(:roles).load_from('roles', role)
       role_load.save
+      role_load
     end
 
     def upload_data_bags(bag)
@@ -232,6 +233,7 @@ module KnifeTable
       dbag.data_bag(bag.split('/').first)
       dbag.raw_data = data_bag_load
       dbag.save
+      dbag
     end
 
     private
@@ -312,8 +314,8 @@ module KnifeTable
       ui.highline.say "#{ui.highline.color("Uploading #{type.to_s.gsub('_', ' ')}:", HighLine::GREEN)} "
       unless(changed.empty?)
         changed.each do |item|
-          send("upload_#{type}", item)
-          ui.highline.say "#{File.basename(item).sub(/\.(rb|json)/, '')} "
+          thing = send("upload_#{type}", item)
+          ui.highline.say "#{thing.is_a?(Chef::Role) ? thing.name : "#{thing.data_bag}::#{thing.id}"} "
         end
       else
         ui.highline.say "no #{type.to_s.gsub('_', ' ').sub(/s$/, '')} changes detected "
