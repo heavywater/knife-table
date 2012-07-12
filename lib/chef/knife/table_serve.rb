@@ -227,8 +227,11 @@ module KnifeTable
     end
 
     def upload_data_bags(bag)
-      data_bag_load = loader(:data_bags).load_from('data_bags', bag.split.first, bag.split.last)
-      data_bag_load.save
+      data_bag_load = loader(:data_bags).load_from('data_bags', bag.split('/').first, bag.split('/').last)
+      dbag = Chef::DataBagItem.new
+      dbag.data_bag(bag.split('/').first)
+      dbag.raw_data = data_bag_load
+      dbag.save
     end
 
     private
@@ -322,7 +325,7 @@ module KnifeTable
       if(type == :roles)
         @role_loader ||= Chef::Knife::Core::ObjectLoader.new(Chef::Role, ui)
       elsif(type == :data_bags)
-        @role_loader ||= Chef::Knife::Core::ObjectLoader.new(Chef::DataBag, ui)
+        @databag_loader ||= Chef::Knife::Core::ObjectLoader.new(Chef::DataBagItem, ui)
       else
         raise 'Unsupported load type'
       end
