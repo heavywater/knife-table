@@ -77,7 +77,7 @@ module KnifeTable
       data_bags = discover_changed(:data_bags, *determine_commit_span) if config[:upload_data_bags]
 
       ui.msg ui.highline.color("#{' ' * 10}** Knife Table: Service started  **", [HighLine::GREEN, HighLine::BOLD])
-      ui.highline.say ui.highline.color("Discovered cookbooks staged for freeze: #{cookbooks.join(', ')}", HighLine::CYAN)
+      ui.highline.say ui.highline.color("Discovered cookbooks staged for freeze: #{cookbooks.join(', ')}", HighLine::CYAN) unless cookbooks.nil? || cookbooks.empty?
       ui.highline.say ui.highline.color("Environments staged to be updated: #{@environments.join(', ')}", HighLine::CYAN) unless @environments.empty?
       ui.highline.say ui.highline.color("Roles staged to be uploaded: #{roles.sort.map{|r|r.sub(/\.(rb|json)/, '')}.join(', ')}", HighLine::CYAN) unless roles.nil? || roles.empty?
       ui.highline.say ui.highline.color("Data Bags staged to be uploaded: #{data_bags.sort.join(', ')}", HighLine::CYAN) unless data_bags.nil? || data_bags.empty?
