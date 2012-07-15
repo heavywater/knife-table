@@ -12,4 +12,5 @@ Gem::Specification.new do |s|
   s.files = Dir.glob('**/*')
   s.add_dependency 'knife-spork', '>= 0.1.11'
   s.add_dependency 'hub', '>= 1.10.1'
+  s.add_dependency 'foodcritic', '>= 1.4.0'
 end
