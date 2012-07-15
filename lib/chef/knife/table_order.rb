@@ -28,21 +28,44 @@ module KnifeTable
       :short => '-t TITLE',
       :long => '--title TITLE',
       :description => 'Title for pull request'
-   
 
-    def initialize(*args)
-      super
-      @upstream = config[:upstream_user]
-      raise 'required' unless @upstream
-    end
+    option :foodcritic,
+      :short => '-f [yes|no]',
+      :long => '--foodcritic [yes|no]',
+      :description => 'Pass foodcritic before generating pull request',
+      :default => 'no',
+      :proc => lambda{|x| x.downcase.strip == 'yes' ? true : false}
+
+    option :foodcritic_fail_on,
+      :short => '-x correctness,any,~FC014',
+      :long => '--foodcritic-fail-on correctness,any,~FC014',
+      :description => 'Set what foodcritic should fail on',
+      :default => 'correctness',
+      :proc => lambda{|v| v.split(',').strip}
+
 
     def run
       ui.msg ui.highline.color("#{' ' * 10}** Knife Table: Placing Order  **", [HighLine::GREEN, HighLine::BOLD])
+      check_config_options
+      if(config[:foodcritic])
+        fail_on = Array(config[:foodcritic_fail_on]).map{|s| "-f #{s}"}.join(' ')
+        cookbooks = discover_changed(:cookbooks, 'master', 'HEAD').map{|c| c.split('/').first}
+        pass = true
+        cookbooks.each do |cookbook|
+          res = system("foodcritic #{fail_on} #{File.join(cookbook_path, cookbook)}")
+          pass = res unless res
+        end
+        unless(pass)
+          ui.fatal "Modifications do not currently pass foodcritic!"
+          exit 1
+        end
+      end
 
       # TODO: Update this to not shell out
       cmd = "hub pull-request \"#{title}\" -b #{@upstream}:#{config[:upstream_branch]} -h #{local_user}:#{local_branch}"
       output = ''
-      unless(File.exists?('/home/spox/config/.config'))
+      err = nil
+      unless(File.exists?(File.join(ENV['HOME'], '.config', 'hub')))
         g_config = Hub::GitHubAPI::Configuration.new(nil)
         g_user = g_config.prompt 'Github username'
         g_pass = g_config.prompt_password 'Github', g_user
@@ -52,13 +75,15 @@ module KnifeTable
           stdin.puts g_user
           stdin.puts g_pass
         end
-        output << stdout.readlines.last
+        output << stdout.readlines.last.to_s
+        err = stderr.readlines.last.to_s
         wait_thr.value
       end
-      if(res.success)
+      output.strip!
+      if(res.success?)
         ui.msg "New pull request: #{output}"
       else
-        ui.error "Failed to create pull request"
+        ui.error err.to_s.empty? ? 'Failed to create pull request' : err
       end
     end
 
@@ -116,5 +141,15 @@ module KnifeTable
       l
     end
 
+    def check_config_options
+      %w(upstream_user upstream_branch title foodcritic foodcritic_fail_on).each do |key|
+        config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
+      end
+      @upstream = config[:upstream_user]
+      unless(@upstream)
+        ui.fatal "Upstream user is REQUIRED"
+        exit 1
+      end
+    end
   end
 end
