@@ -9,9 +9,11 @@ helps to provide consistency within the environment.
 
 ## Usage
 
-Currently, two helpers are available:
+Currently, the supported workflow is as follows:
 
 `knife table set`
+
+`knife table order`
 
 and 
 
@@ -25,12 +27,18 @@ of what is being added:
 
 `knife table set new feature`
 
-This will create a new working branch named 'WIP-new_feature'. The prefix
-for the branch defaults to 'WIP-' but can be modified using the `-p` option.
-If it is known what cookbooks will be modified, you can provide them while
-setting:
+This will create a new working branch named 'new_feature'. A default prefix
+can be added the branch name via the `-p` option. If it is known what cookbooks 
+will be modified, you can provide them while setting:
 
 `knife table set -c iptables,mysql new feature`
+
+### Order
+
+Once the code has been updated, tested and is ready for review, the order
+can be placed which will create a new pull request:
+
+`knife table order`
 
 ### Service
 
