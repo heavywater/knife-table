@@ -20,8 +20,7 @@ module KnifeTable
     option :branch_prefix,
       :short => '-p PREFIX',
       :long => '--branch-prefix PREFIX',
-      :description => 'Set prefix for branch name',
-      :default => 'WIP-'
+      :description => 'Set prefix for branch name'
 
     option :bump_type,
       :short => '-b TYPE',
@@ -29,16 +28,17 @@ module KnifeTable
       :description => 'Type of version bump (major, minor, patch)',
       :default => 'patch'
 
-    def initialize(*args)
-      super
-      @cookbooks = config[:cookbooks].to_s.split(',').map(&:strip)
-    end
-
     def run
       ui.msg ui.highline.color("#{' ' * 10}** Knife Table: New place setting  **", [HighLine::GREEN, HighLine::BOLD])
+      if(name_args.empty?)
+        ui.fatal "Feature description must be provided"
+        exit 1
+      end
+      check_config_options
       check_current_branch!
       check_up_to_date!
       branch_name = "#{config[:branch_prefix]}#{name_args.join('_').downcase}"
+      check_branch_conflict!(branch_name)
       ui.highline.say "Creating new work branch (#{branch_name}): "
       git.branch(branch_name).create
       ui.highline.say "done"
@@ -56,13 +56,30 @@ module KnifeTable
 
     def check_current_branch!
       unless(git.current_branch == 'master')
-        ui.fatal "Set requires master branch to be checked out. Current on: #{git.current_branch}"
+        ui.fatal "Set requires master branch to be checked out. Currently on: #{git.current_branch}"
+        exit 1
+      end
+    end
+
+    def check_branch_conflict!(name)
+      conflict = git.branches.map(&:full).detect do |b|
+        b == name || b.sub(%r{remotes/[^/]+/}, '') == name
+      end
+      if(conflict)
+        ui.fatal "Failed to create topic branch. Already exists: #{conflict}"
         exit 1
       end
     end
 
     def check_up_to_date!
       # TODO: fetch/merge master to ensure up to date?
+    end
+
+    def check_config_options
+      %w(cookbooks branch_prefix bump_type).each do |key|
+        config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
+      end
+      @cookbooks = config[:cookbooks].to_s.split(',').map(&:strip)
     end
 
   end
