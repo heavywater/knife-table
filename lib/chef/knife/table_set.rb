@@ -36,6 +36,8 @@ module KnifeTable
 
     def run
       ui.msg ui.highline.color("#{' ' * 10}** Knife Table: New place setting  **", [HighLine::GREEN, HighLine::BOLD])
+      check_current_branch!
+      check_up_to_date!
       branch_name = "#{config[:branch_prefix]}#{name_args.join('_').downcase}"
       ui.highline.say "Creating new work branch (#{branch_name}): "
       git.branch(branch_name).create
@@ -48,6 +50,19 @@ module KnifeTable
           bumper.patch(cookbook_path, cookbook, config[:bump_type])
         end
       end
+    end
+
+    private
+
+    def check_current_branch!
+      unless(git.current_branch == 'master')
+        ui.fatal "Set requires master branch to be checked out. Current on: #{git.current_branch}"
+        exit 1
+      end
+    end
+
+    def check_up_to_date!
+      # TODO: fetch/merge master to ensure up to date?
     end
 
   end
