@@ -1,9 +1,9 @@
-# ChefTable
+# KnifeTable
 
-ChefTable is a knife plugin to aid in cookbook development
+KnifeTable is a knife plugin to aid in cookbook development
 workflow. Its intention is to help automate versioning
 within environments and cookbook freezing based on a stable
-branch. Building off of the knife-spork plugin ChefTable
+branch. Building off of the knife-spork plugin KnifeTable
 helps to provide consistency within the environment.
 
 
