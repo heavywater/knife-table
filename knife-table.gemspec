@@ -2,7 +2,7 @@ $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__)) + '/lib/'
 require 'knife-table/version'
 Gem::Specification.new do |s|
   s.name = 'knife-table'
-  s.version = KnifeTable::VERSION
+  s.version = KnifeTable::VERSION.version
   s.summary = 'Help chef set and serve the table'
   s.author = 'Chris Roberts'
   s.email = 'chrisroberts.code@gmail.com'
