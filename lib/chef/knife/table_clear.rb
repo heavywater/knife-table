@@ -13,7 +13,7 @@ module KnifeTable
     banner 'knife table clear'
 
     def run
-
+      ui.fatal "Not currently supported"
     end
 
   end
