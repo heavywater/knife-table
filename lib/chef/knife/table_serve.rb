@@ -65,11 +65,6 @@ module KnifeTable
       :boolean => true,
       :description => 'Upload any changed data bags'
 
-    def initialize(*args)
-      super
-      @environments = config[:environments].to_s.split(",").map(&:strip)
-    end
-
     def run
       sanity_checks
       cookbooks = discover_changed(:cookbooks, *determine_commit_span).map{|c|c.split('/').first}
@@ -299,16 +294,6 @@ module KnifeTable
       end
     end
 
-    def discover_changed(type, first_commit, last_commit)
-      changed = []
-      git.diff(first_commit, last_commit).stats[:files].keys.each do |path|
-        if(path.start_with?(type.to_s))
-          changed << path.sub(/^#{type.to_s}\/?/, '')
-        end
-      end
-      changed.uniq
-    end
-
     def upload_changes(type, changed)
       raise "Unsupported upload change type: #{type}" unless [:roles, :data_bags].include?(type.to_sym)
       ui.highline.say "#{ui.highline.color("Uploading #{type.to_s.gsub('_', ' ')}:", HighLine::GREEN)} "
@@ -333,5 +318,12 @@ module KnifeTable
       end
     end
 
+    def check_config_options
+      %w(environments git_autopush git_tag git_branch git_remote_name 
+        git_autocommit autoproceed upload_roles upload_data_bags).each do |key|
+        config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
+      end
+      @environments = config[:environments].to_s.split(",").map(&:strip)
+    end
   end
 end
