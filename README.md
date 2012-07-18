@@ -40,6 +40,9 @@ can be placed which will create a new pull request:
 
 `knife table order`
 
+The order option will also optionally run foodcritic and require a passing
+result before proceeding with the pull request generation.
+
 ### Service
 
 Service works on the assumption that any new code into the stable branch (master

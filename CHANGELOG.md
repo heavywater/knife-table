@@ -1,4 +1,7 @@
 ## v0.0.3
+* Add foodcritic support
+* Add knife config support
+* Add hub integration
 * Add order command
 
 ## v0.0.2
