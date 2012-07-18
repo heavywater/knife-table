@@ -21,8 +21,7 @@ module KnifeTable
     option :upstream_branch,
       :short => '-b BRANCH',
       :long => '--upstream-branch BRANCH',
-      :description => 'Upstream branch name',
-      :default => 'master'
+      :description => 'Upstream branch name'
 
     option :title,
       :short => '-t TITLE',
@@ -33,14 +32,12 @@ module KnifeTable
       :short => '-f [yes|no]',
       :long => '--foodcritic [yes|no]',
       :description => 'Pass foodcritic before generating pull request',
-      :default => 'no',
       :proc => lambda{|x| x.downcase.strip == 'yes' ? true : false}
 
     option :foodcritic_fail_on,
       :short => '-x correctness,any,~FC014',
       :long => '--foodcritic-fail-on correctness,any,~FC014',
       :description => 'Set what foodcritic should fail on',
-      :default => 'correctness',
       :proc => lambda{|v| v.split(',').strip}
 
 
@@ -150,6 +147,9 @@ module KnifeTable
         ui.fatal "Upstream user is REQUIRED"
         exit 1
       end
+      config[:foodcritic_fail_on] ||= 'correctness'
+      config[:upstream_branch] ||= 'master'
+      config[:foodcritic] = config[:foodcritic].downcase.strip == 'yes' if config[:foodcritic].is_a?(String)
     end
   end
 end

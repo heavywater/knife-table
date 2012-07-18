@@ -25,8 +25,7 @@ module KnifeTable
     option :bump_type,
       :short => '-b TYPE',
       :long => '--bump-type TYPE',
-      :description => 'Type of version bump (major, minor, patch)',
-      :default => 'patch'
+      :description => 'Type of version bump (major, minor, patch)'
 
     def run
       ui.msg ui.highline.color("#{' ' * 10}** Knife Table: New place setting  **", [HighLine::GREEN, HighLine::BOLD])
@@ -80,6 +79,7 @@ module KnifeTable
         config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
       end
       @cookbooks = config[:cookbooks].to_s.split(',').map(&:strip)
+      config[:bump_type] ||= 'patch'
     end
 
   end

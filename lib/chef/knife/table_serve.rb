@@ -32,13 +32,11 @@ module KnifeTable
     option :git_branch,
       :short => '-b BRANCH',
       :long => '--git-branch BRANCH',
-      :default => 'master',
       :description => 'Set working branch'
 
     option :git_remote_name,
       :short => '-r NAME',
       :long => '--git-remote-name NAME',
-      :default => 'origin',
       :description => 'Remote repo name'
 
     option :git_autocommit,
@@ -324,6 +322,8 @@ module KnifeTable
         config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
       end
       @environments = config[:environments].to_s.split(",").map(&:strip)
+      config[:git_branch] ||= 'master'
+      config[:git_remote_name] ||= 'origin'
     end
   end
 end
