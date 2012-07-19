@@ -64,6 +64,7 @@ module KnifeTable
       :description => 'Upload any changed data bags'
 
     def run
+      check_config_options
       sanity_checks
       cookbooks = discover_changed(:cookbooks, *determine_commit_span).map{|c|c.split('/').first}
       roles = discover_changed(:roles, *determine_commit_span) if config[:upload_roles]
