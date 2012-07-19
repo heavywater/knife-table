@@ -29,10 +29,10 @@ module KnifeTable
       :description => 'Title for pull request'
 
     option :foodcritic,
-      :short => '-f [yes|no]',
-      :long => '--foodcritic [yes|no]',
+      :short => '-f',
+      :long => '--foodcritic',
       :description => 'Pass foodcritic before generating pull request',
-      :proc => lambda{|x| x.downcase.strip == 'yes' ? true : false}
+      :boolean => true
 
     option :foodcritic_fail_on,
       :short => '-x correctness,any,~FC014',
@@ -149,7 +149,6 @@ module KnifeTable
       end
       config[:foodcritic_fail_on] ||= 'correctness'
       config[:upstream_branch] ||= 'master'
-      config[:foodcritic] = config[:foodcritic].downcase.strip == 'yes' if config[:foodcritic].is_a?(String)
     end
   end
 end
