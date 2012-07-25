@@ -1,3 +1,6 @@
+## v0.0.5
+* Typo fix for serve and order based configuration values
+
 ## v0.0.4
 * Move configuration values within `knife`
 
