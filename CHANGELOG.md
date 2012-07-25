@@ -1,3 +1,6 @@
+## v0.0.4
+* Move configuration values within `knife`
+
 ## v0.0.3
 * Add foodcritic support
 * Add knife config support

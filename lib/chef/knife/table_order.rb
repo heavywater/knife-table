@@ -140,7 +140,7 @@ module KnifeTable
 
     def check_config_options
       %w(upstream_user upstream_branch title foodcritic foodcritic_fail_on).each do |key|
-        config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
+        config[key.to_sym] ||= Chef::Config[:knife]["table_set_#{key}".to_sym]
       end
       @upstream = config[:upstream_user]
       unless(@upstream)

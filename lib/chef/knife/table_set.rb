@@ -76,7 +76,7 @@ module KnifeTable
 
     def check_config_options
       %w(cookbooks branch_prefix bump_type).each do |key|
-        config[key.to_sym] ||= Chef::Config["table_set_#{key}".to_sym]
+        config[key.to_sym] ||= Chef::Config[:knife]["table_set_#{key}".to_sym]
       end
       @cookbooks = config[:cookbooks].to_s.split(',').map(&:strip)
       config[:bump_type] ||= 'patch'
