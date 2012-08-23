@@ -1,4 +1,5 @@
 require 'knife-table/helpers'
+require 'knife-table/../chef/knife/table_serve.rb'
 
 module KnifeTable
   class TableSet < Chef::Knife
@@ -47,6 +48,30 @@ module KnifeTable
         bumper = KnifeSpork::SporkBump.new
         @cookbooks.each do |cookbook|
           bumper.patch(cookbook_path, cookbook, config[:bump_type])
+        end
+      end
+
+      serve = KnifeTable::TableServe.new
+      span = serve.determine_commit_span
+      user = ENV['OPSCODE_USER'] || ENV['USER']
+      path = cookbook_path.gsub("cookbooks", "environments") + "/#{user}.json"
+      cookbooks = discover_changed(:cookbooks, span[0], span[1]).map{|c| c.split('/').first}
+
+      unless(File.exists?(path))
+        ui.highline.say "Creating user environment for #{ui.highline.color(user, HighLine::BLUE)} "
+        env = JSON.parse(IO.read(path.gsub("#{user}.json", "production.json")))
+        env.name(user)
+        File.new(path, 'w').write(env.to_json)
+        ui.highline.say "... done\n\n#{ui.highline.color(user, HighLine::BLUE)}: "
+        unless(cookbooks.empty?)
+          cookbooks.each{|c| serve.update_environments(user, c) }
+          ui.highline.say "\n"
+        end
+      else
+        ui.highline.say " #{ui.highline.color(user, HighLine::BLUE)}: "
+        unless(cookbooks.empty?)
+          cookbooks.each{|c| serve.update_environments(user, c) }
+          ui.highline.say "\n"
         end
       end
     end

@@ -230,6 +230,24 @@ module KnifeTable
       dbag
     end
 
+    def determine_commit_span
+      if(@first_commit.nil? || @last_commit.nil?)
+        if(name_args.size > 0)
+          if(name_args.first.start_with?('#'))
+            @first_commit, @last_commit = discover_commits(name_args.first)
+          elsif(name_args.first.include?(".."))
+            @first_commit, @last_commit = name_args.first.split("..")
+          else
+            @first_commit = "#{name_args.first}^1"
+            @last_commit = name_args.first
+          end
+        else
+          @first_commit, @last_commit = discover_commits
+        end
+      end
+      [@first_commit, @last_commit]
+    end
+
     private
 
     def promote_environment(environment, cookbook)
@@ -265,23 +283,6 @@ module KnifeTable
       end
     end
 
-    def determine_commit_span
-      if(@first_commit.nil? || @last_commit.nil?)
-        if(name_args.size > 0)
-          if(name_args.first.start_with?('#'))
-            @first_commit, @last_commit = discover_commits(name_args.first)
-          elsif(name_args.first.include?(".."))
-            @first_commit, @last_commit = name_args.first.split("..")
-          else
-            @first_commit = "#{name_args.first}^1"
-            @last_commit = name_args.first
-          end
-        else
-          @first_commit, @last_commit = discover_commits
-        end
-      end
-      [@first_commit, @last_commit]
-    end
 
     def discover_commits(pull_num = nil)
       match = "pull request #{pull_num}"
