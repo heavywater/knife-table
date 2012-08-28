@@ -162,7 +162,7 @@ module KnifeTable
     end
 
     def update_environments(environment, cookbook)
-      promote_environment(environment, cookbook)
+      promote_environment_new(environment, cookbook)
       ui.highline.say "#{cookbook} "
     end
 
@@ -259,6 +259,15 @@ module KnifeTable
       )
       env_json = spork_promote.pretty_print(env)
       spork_promote.save_environment_changes(environment, env_json)
+    end
+
+    def promote_environment_new(environment, cookbook)
+      version = spork_promote.get_version(cookbook_path, cookbook)
+      path = cookbook_path.gsub("cookbooks", "environments") + "/#{environment}.json"
+      env = JSON.parse(IO.read(path))
+      env.cookbook(cookbook, version)
+      spork_promote.save_environment_changes(environment, spork_promote.pretty_print(env))
+      env.save
     end
 
     def spork_promote
