@@ -52,12 +52,14 @@ module KnifeTable
 
       serve = KnifeTable::TableServe.new
       span = serve.determine_commit_span
-      path = cookbook_path.gsub("cookbooks", "environments") + "/#{branch_name}.json"
+      env_dir = cookbook_path.gsub(%r{cookbooks/?$}, 'environments')
+      path = File.join(env_dir, "#{branch_name}.json")
+      prod_path = File.join(env_dir, 'production.json')
 
       unless(File.exists?(path))
         ui.highline.say "Creating local environment #{ui.highline.color(branch_name, HighLine::BLUE)} "
-        if(File.exists?(path.gsub("#{branch_name}.json", "production.json")))
-          env = JSON.parse(IO.read(path.gsub("#{branch_name}.json", "production.json")))
+        if(File.exists?(prod_path))
+          env = JSON.parse(IO.read(prod_path))
         else
           ui.highline.say "\n#{ui.highline.color('No production environment found ... terminating', HighLine::RED)}"
           exit 1
