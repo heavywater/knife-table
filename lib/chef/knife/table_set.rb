@@ -49,9 +49,45 @@ module KnifeTable
           bumper.patch(cookbook_path, cookbook, config[:bump_type])
         end
       end
+
+      serve = KnifeTable::TableServe.new
+      span = serve.determine_commit_span
+      path = cookbook_path.gsub("cookbooks", "environments") + "/#{branch_name}.json"
+
+      unless(File.exists?(path))
+        ui.highline.say "Creating local environment #{ui.highline.color(branch_name, HighLine::BLUE)} "
+        if(File.exists?(path.gsub("#{branch_name}.json", "production.json")))
+          env = JSON.parse(IO.read(path.gsub("#{branch_name}.json", "production.json")))
+        else
+          ui.highline.say "\n#{ui.highline.color('No production environment found ... terminating', HighLine::RED)}"
+          exit 1
+        end
+        env.name(branch_name)
+        if(Chef::Environment.list.include?(branch_name))
+          ui.highline.say "\n#{ui.highline.color('WARN', HighLine::RED)}: environment exists on server"
+        end
+        environment_copy(env, path)
+        ui.highline.say "... done\n\n#{ui.highline.color(env.name, HighLine::BLUE)}: "
+        unless(@cookbooks.empty?)
+          @cookbooks.each{|c| serve.update_environments(env.name, c) }
+          ui.highline.say "\n"
+        end
+      else
+        ui.highline.say "#{ui.highline.color(branch_name, HighLine::BLUE)}: "
+        unless(@cookbooks.empty?)
+          @cookbooks.each{|c| serve.update_environments(branch_name, c) }
+          ui.highline.say "\n"
+        end
+      end
     end
 
     private
+
+    def environment_copy(environment, path)
+      f = File.open(path, 'w')
+      f.write(environment.to_json + "\n")
+      f.close
+    end
 
     def check_current_branch!
       unless(git.current_branch == 'master')

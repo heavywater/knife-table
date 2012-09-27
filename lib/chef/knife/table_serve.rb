@@ -162,7 +162,7 @@ module KnifeTable
     end
 
     def update_environments(environment, cookbook)
-      promote_environment(environment, cookbook)
+      promote_environment_new(environment, cookbook)
       ui.highline.say "#{cookbook} "
     end
 
@@ -230,6 +230,24 @@ module KnifeTable
       dbag
     end
 
+    def determine_commit_span
+      if(@first_commit.nil? || @last_commit.nil?)
+        if(name_args.size > 0)
+          if(name_args.first.start_with?('#'))
+            @first_commit, @last_commit = discover_commits(name_args.first)
+          elsif(name_args.first.include?(".."))
+            @first_commit, @last_commit = name_args.first.split("..")
+          else
+            @first_commit = "#{name_args.first}^1"
+            @last_commit = name_args.first
+          end
+        else
+          @first_commit, @last_commit = discover_commits
+        end
+      end
+      [@first_commit, @last_commit]
+    end
+
     private
 
     def promote_environment(environment, cookbook)
@@ -241,6 +259,15 @@ module KnifeTable
       )
       env_json = spork_promote.pretty_print(env)
       spork_promote.save_environment_changes(environment, env_json)
+    end
+
+    def promote_environment_new(environment, cookbook)
+      version = spork_promote.get_version(cookbook_path, cookbook)
+      path = cookbook_path.gsub("cookbooks", "environments") + "/#{environment}.json"
+      env = JSON.parse(IO.read(path))
+      env.cookbook(cookbook, version)
+      spork_promote.save_environment_changes(environment, spork_promote.pretty_print(env))
+      env.save
     end
 
     def spork_promote
@@ -265,23 +292,6 @@ module KnifeTable
       end
     end
 
-    def determine_commit_span
-      if(@first_commit.nil? || @last_commit.nil?)
-        if(name_args.size > 0)
-          if(name_args.first.start_with?('#'))
-            @first_commit, @last_commit = discover_commits(name_args.first)
-          elsif(name_args.first.include?(".."))
-            @first_commit, @last_commit = name_args.first.split("..")
-          else
-            @first_commit = "#{name_args.first}^1"
-            @last_commit = name_args.first
-          end
-        else
-          @first_commit, @last_commit = discover_commits
-        end
-      end
-      [@first_commit, @last_commit]
-    end
 
     def discover_commits(pull_num = nil)
       match = "pull request #{pull_num}"
