@@ -320,7 +320,7 @@ module KnifeTable
     def check_config_options
       %w(environments git_autopush git_tag git_branch git_remote_name 
         git_autocommit autoproceed upload_roles upload_data_bags).each do |key|
-        config[key.to_sym] ||= Chef::Config[:knife]["table_set_#{key}".to_sym]
+        config[key.to_sym] ||= Chef::Config[:knife]["table_serve_#{key}".to_sym]
       end
       @environments = config[:environments].is_a?(Array) ? config[:environments] : config[:environments].to_s.split(",").map(&:strip)
       config[:git_branch] ||= 'master'
