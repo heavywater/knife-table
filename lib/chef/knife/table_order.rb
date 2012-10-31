@@ -1,4 +1,3 @@
-require 'open3'
 require 'knife-table/helpers'
 
 module KnifeTable
@@ -87,30 +86,11 @@ module KnifeTable
         end
       end
 
-      # TODO: Update this to not shell out
-      cmd = "hub pull-request \"#{title}\" -b #{@upstream}:#{config[:upstream_branch]} -h #{local_user}:#{local_branch}"
-      output = ''
-      err = nil
-      unless(File.exists?(File.join(ENV['HOME'], '.config', 'hub')))
-        g_config = Hub::GitHubAPI::Configuration.new(nil)
-        g_user = g_config.prompt 'Github username'
-        g_pass = g_config.prompt_password 'Github', g_user
-      end
-      res = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        if(g_user)
-          stdin.puts g_user
-          stdin.puts g_pass
-        end
-        output << stdout.readlines.last.to_s
-        err = stderr.readlines.last.to_s
-        wait_thr.value
-      end
-      output.strip!
-      if(res.success?)
-        ui.msg "New pull request: #{output}"
-      else
-        ui.error err.to_s.empty? ? 'Failed to create pull request' : err
-      end
+      hub_runner = Hub::Runner.new(
+        'pull-request', title, '-b', "#{@upstream}:#{config[:upstream_branch]}",
+        '-h', "#{user_for_local}:#{local_branch}"
+      )
+      hub_runner.execute
     end
 
     private
@@ -128,43 +108,6 @@ module KnifeTable
         end
       end
       @branch
-    end
-
-    def local_user
-      unless(@local)
-        l = %x{git remote -v}.split("\n").find_all{|r|
-          r.include?('github.com')
-        }.map{|r|
-          Array(r.scan(%r{:[^/]+}).first).first
-        }.compact.map{|r|
-          r.sub(':', '')
-        }.uniq.sort - [@upstream]
-        if(l.size > 1)
-          @local = ask_user_local(l)
-        elsif(l.size < 1)
-          @local = @upstream
-        else
-          @local = l.first
-        end
-      end
-      @local
-    end
-
-    def ask_user_local(locals)
-      l = nil
-      ui.msg 'Please select your local user:'
-      while(l.nil?)
-        locals.each_with_index do |name, idx|
-          ui.msg "#{idx + 1}. #{name}"
-        end
-        res = ui.ask_question "Enter number of local user [1-#{local.size}]:"
-        if(locals[res.to_i + 1])
-          l = locals[res.to_i + 1]
-        else
-          ui.warn "Invalid selection."
-        end
-      end
-      l
     end
 
     def check_config_options
